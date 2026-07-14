@@ -26,7 +26,9 @@ React Flow.
    Mở [http://localhost:3000](http://localhost:3000) — sẽ tự chuyển tới
    `/login` nếu chưa đăng nhập.
 
-## Trạng thái hiện tại (Bước 1 — Setup)
+## Trạng thái hiện tại
+
+**Bước 1 — Setup**
 
 - [x] Next.js 16 (App Router) + TypeScript + Tailwind
 - [x] Supabase client (browser + server) qua `@supabase/ssr`
@@ -35,9 +37,25 @@ React Flow.
 - [x] Schema DB cho cả 2 phần: `customers`, `projects`, `canvas_nodes`,
       `canvas_edges` (`supabase/schema.sql`), kèm Row Level Security
       (chỉ user đã đăng nhập mới truy cập, không phân quyền chi tiết)
-- [x] Sidebar nav + placeholder `/customers`, `/projects`
-- [ ] Phần 1 — Customer Management CRUD (bước tiếp theo)
-- [ ] Phần 2 — Project Canvas (React Flow)
+
+**Bước 2 — Phần 1: Customer Management**
+
+- [x] Bảng danh sách khách hàng: search theo tên/email, filter theo
+      trạng thái + gói (`/customers`)
+- [x] Thêm khách hàng mới (`/customers/new`)
+- [x] Trang chi tiết khách hàng: xem/sửa thông tin, xem danh sách dự án
+      đã link (`/customers/[id]`)
+- [x] Nút "Tạo dự án mới" từ trang chi tiết khách hàng → tạo `projects`
+      row gắn sẵn `customer_id`, chuyển sang `/projects/[id]`
+- [x] Danh sách dự án thật (`/projects`)
+
+Chưa test được với Supabase project thật (chưa có credentials) — cần bạn
+tạo project, chạy `schema.sql`, điền `.env.local` rồi tự kiểm tra luồng
+đăng nhập + CRUD khách hàng.
+
+**Còn lại**
+
+- [ ] Phần 2 — Project Canvas (React Flow): tạo/xoá/nối node
 - [ ] Tích hợp Anthropic API cho từng node
 - [ ] Export PDF / render Landing Page
 
