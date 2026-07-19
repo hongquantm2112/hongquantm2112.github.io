@@ -55,10 +55,21 @@ Google) + Neon Postgres (Prisma) + React Flow.
       gắn sẵn `customerId`, chuyển sang `/projects/[id]`
 - [x] Danh sách dự án thật (`/projects`)
 
+**Bước 3 — Phần 2: Project Canvas (React Flow, chưa tích hợp AI)**
+
+- [x] Canvas kéo-thả (`/projects/[id]`): thêm 6 loại node cố định từ
+      sidebar, kéo di chuyển, nối/xoá dây — lưu thật vào Neon
+      (`CanvasNode`/`CanvasEdge`)
+- [x] Click node → panel bên phải nhập dữ liệu riêng theo loại node
+      (Thông tin khách hàng, Kinh nghiệm, Theme, Request thiết kế), Save
+      ghi vào `inputData`
+- [x] Node "Xác nhận nội dung" và "Sản phẩm" hiện placeholder (chờ AI)
+- [x] Nút Run tổng / Run từng node đã dựng khung UI, đang **disabled**
+      (sẽ nối logic thật ở bước tích hợp AI)
+
 **Còn lại**
 
-- [ ] Phần 2 — Project Canvas (React Flow): tạo/xoá/nối node
-- [ ] Tích hợp Anthropic API cho từng node
+- [ ] Tích hợp Anthropic API cho từng node, kích hoạt nút Run
 - [ ] Export PDF / render Landing Page
 - [ ] (Tương lai) Form public để khách hàng tự điền thông tin, tự đổ dữ
       liệu vào `Customer`/`Project`/`CanvasNode` — kiến trúc hiện tại

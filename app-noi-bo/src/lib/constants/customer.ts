@@ -1,4 +1,4 @@
-import { CustomerStatus, PackageType } from "@/generated/prisma/client";
+import { CustomerStatus, PackageType } from "@/generated/prisma/enums";
 
 export const CUSTOMER_STATUS_LABELS: Record<CustomerStatus, string> = {
   MOI_LIEN_HE: "Mới liên hệ",
