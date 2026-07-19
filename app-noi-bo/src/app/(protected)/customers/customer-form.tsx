@@ -1,9 +1,10 @@
 import {
   CUSTOMER_STATUS_LABELS,
   CUSTOMER_STATUS_OPTIONS,
+  PACKAGE_LABELS,
   PACKAGE_OPTIONS,
 } from "@/lib/constants/customer";
-import type { Customer } from "@/lib/supabase/types";
+import { CustomerStatus, type Customer } from "@/generated/prisma/client";
 
 export function CustomerForm({
   action,
@@ -24,7 +25,7 @@ export function CustomerForm({
         <input
           name="full_name"
           required
-          defaultValue={customer?.full_name}
+          defaultValue={customer?.fullName}
           className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none"
         />
       </div>
@@ -90,7 +91,7 @@ export function CustomerForm({
             <option value="">— Chưa chọn —</option>
             {PACKAGE_OPTIONS.map((p) => (
               <option key={p} value={p}>
-                {p}
+                {PACKAGE_LABELS[p]}
               </option>
             ))}
           </select>
@@ -101,7 +102,7 @@ export function CustomerForm({
           </label>
           <select
             name="status"
-            defaultValue={customer?.status ?? "Moi lien he"}
+            defaultValue={customer?.status ?? CustomerStatus.MOI_LIEN_HE}
             className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none"
           >
             {CUSTOMER_STATUS_OPTIONS.map((s) => (

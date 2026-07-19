@@ -1,21 +1,31 @@
-import type { CustomerStatus, PackageType } from "@/lib/supabase/types";
+import { CustomerStatus, PackageType } from "@/generated/prisma/client";
 
 export const CUSTOMER_STATUS_LABELS: Record<CustomerStatus, string> = {
-  "Moi lien he": "Mới liên hệ",
-  "Dang lam": "Đang làm",
-  "Cho khach duyet": "Chờ khách duyệt",
-  "Da giao": "Đã giao",
-  "Da thanh toan": "Đã thanh toán",
-  Huy: "Huỷ",
+  MOI_LIEN_HE: "Mới liên hệ",
+  DANG_LAM: "Đang làm",
+  CHO_KHACH_DUYET: "Chờ khách duyệt",
+  DA_GIAO: "Đã giao",
+  DA_THANH_TOAN: "Đã thanh toán",
+  HUY: "Huỷ",
 };
 
 export const CUSTOMER_STATUS_OPTIONS: CustomerStatus[] = [
-  "Moi lien he",
-  "Dang lam",
-  "Cho khach duyet",
-  "Da giao",
-  "Da thanh toan",
-  "Huy",
+  CustomerStatus.MOI_LIEN_HE,
+  CustomerStatus.DANG_LAM,
+  CustomerStatus.CHO_KHACH_DUYET,
+  CustomerStatus.DA_GIAO,
+  CustomerStatus.DA_THANH_TOAN,
+  CustomerStatus.HUY,
 ];
 
-export const PACKAGE_OPTIONS: PackageType[] = ["PDF", "Landing Page", "Combo"];
+export const PACKAGE_LABELS: Record<PackageType, string> = {
+  PDF: "PDF",
+  LANDING_PAGE: "Landing Page",
+  COMBO: "Combo",
+};
+
+export const PACKAGE_OPTIONS: PackageType[] = [
+  PackageType.PDF,
+  PackageType.LANDING_PAGE,
+  PackageType.COMBO,
+];

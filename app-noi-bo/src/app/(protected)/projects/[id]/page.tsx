@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { PACKAGE_LABELS } from "@/lib/constants/customer";
 
 export default async function ProjectDetailPage({
   params,
@@ -8,12 +9,16 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: project } = await supabase
-    .from("projects")
-    .select("id, name, package, customer_id, customers(full_name)")
-    .eq("id", id)
-    .single();
+  const project = await prisma.project.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      package: true,
+      customerId: true,
+      customer: { select: { fullName: true } },
+    },
+  });
 
   if (!project) {
     notFound();
@@ -28,13 +33,12 @@ export default async function ProjectDetailPage({
         {project.name}
       </h1>
       <p className="mb-6 text-sm text-neutral-500">
-        Gói: {project.package}
-        {project.customer_id ? (
+        Gói: {PACKAGE_LABELS[project.package]}
+        {project.customerId ? (
           <>
             {" · "}
-            <Link href={`/customers/${project.customer_id}`} className="hover:underline">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(project.customers as any)?.full_name}
+            <Link href={`/customers/${project.customerId}`} className="hover:underline">
+              {project.customer?.fullName}
             </Link>
           </>
         ) : null}

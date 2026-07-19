@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import {
   CUSTOMER_STATUS_LABELS,
   CUSTOMER_STATUS_OPTIONS,
+  PACKAGE_LABELS,
   PACKAGE_OPTIONS,
 } from "@/lib/constants/customer";
-import type { Customer, CustomerStatus, PackageType } from "@/lib/supabase/types";
+import { CustomerStatus, PackageType, Prisma } from "@/generated/prisma/client";
 
 export default async function CustomersPage({
   searchParams,
@@ -14,29 +15,31 @@ export default async function CustomersPage({
 }) {
   const { q, status, package: pkg } = await searchParams;
 
-  const supabase = await createClient();
-  let query = supabase
-    .from("customers")
-    .select("id, full_name, email, phone, package, status, created_at")
-    .order("created_at", { ascending: false });
+  const where: Prisma.CustomerWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { fullName: { contains: q, mode: "insensitive" } },
+            { email: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+    ...(status ? { status: status as CustomerStatus } : {}),
+    ...(pkg ? { package: pkg as PackageType } : {}),
+  };
 
-  if (q) {
-    query = query.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
-  }
-  if (status) {
-    query = query.eq("status", status as CustomerStatus);
-  }
-  if (pkg) {
-    query = query.eq("package", pkg as PackageType);
-  }
-
-  const { data: rawCustomers, error } = await query;
-  const customers = rawCustomers as
-    | Pick<
-        Customer,
-        "id" | "full_name" | "email" | "phone" | "package" | "status" | "created_at"
-      >[]
-    | null;
+  const customers = await prisma.customer.findMany({
+    where,
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      package: true,
+      status: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="p-8">
@@ -78,7 +81,7 @@ export default async function CustomersPage({
           <option value="">Tất cả gói</option>
           {PACKAGE_OPTIONS.map((p) => (
             <option key={p} value={p}>
-              {p}
+              {PACKAGE_LABELS[p]}
             </option>
           ))}
         </select>
@@ -98,12 +101,6 @@ export default async function CustomersPage({
         ) : null}
       </form>
 
-      {error ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error.message}
-        </p>
-      ) : null}
-
       <div className="overflow-hidden rounded-lg border border-neutral-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-50 text-neutral-500">
@@ -116,19 +113,21 @@ export default async function CustomersPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100">
-            {customers?.map((c) => (
+            {customers.map((c) => (
               <tr key={c.id} className="hover:bg-neutral-50">
                 <td className="px-4 py-2">
                   <Link
                     href={`/customers/${c.id}`}
                     className="font-medium text-neutral-900 hover:underline"
                   >
-                    {c.full_name}
+                    {c.fullName}
                   </Link>
                 </td>
                 <td className="px-4 py-2 text-neutral-600">{c.email ?? "—"}</td>
                 <td className="px-4 py-2 text-neutral-600">{c.phone ?? "—"}</td>
-                <td className="px-4 py-2 text-neutral-600">{c.package ?? "—"}</td>
+                <td className="px-4 py-2 text-neutral-600">
+                  {c.package ? PACKAGE_LABELS[c.package] : "—"}
+                </td>
                 <td className="px-4 py-2">
                   <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">
                     {CUSTOMER_STATUS_LABELS[c.status]}
@@ -136,7 +135,7 @@ export default async function CustomersPage({
                 </td>
               </tr>
             ))}
-            {customers?.length === 0 ? (
+            {customers.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-neutral-400">
                   Chưa có khách hàng nào khớp bộ lọc.

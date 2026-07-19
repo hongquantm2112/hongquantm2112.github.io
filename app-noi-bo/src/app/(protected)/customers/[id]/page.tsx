@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { updateCustomer, createProjectForCustomer } from "../actions";
 import { CustomerForm } from "../customer-form";
-import { PACKAGE_OPTIONS } from "@/lib/constants/customer";
-import type { Customer } from "@/lib/supabase/types";
+import { PACKAGE_LABELS, PACKAGE_OPTIONS } from "@/lib/constants/customer";
 
 export default async function CustomerDetailPage({
   params,
@@ -16,19 +15,13 @@ export default async function CustomerDetailPage({
   const { id } = await params;
   const { error, saved } = await searchParams;
 
-  const supabase = await createClient();
-
-  const [{ data: customer }, { data: projects }] = await Promise.all([
-    supabase
-      .from("customers")
-      .select("*")
-      .eq("id", id)
-      .single<Customer>(),
-    supabase
-      .from("projects")
-      .select("id, name, package, created_at")
-      .eq("customer_id", id)
-      .order("created_at", { ascending: false }),
+  const [customer, projects] = await Promise.all([
+    prisma.customer.findUnique({ where: { id } }),
+    prisma.project.findMany({
+      where: { customerId: id },
+      select: { id: true, name: true, package: true },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   if (!customer) {
@@ -44,7 +37,7 @@ export default async function CustomerDetailPage({
         ← Khách hàng
       </Link>
       <h1 className="mb-6 mt-2 text-lg font-semibold text-neutral-900">
-        {customer.full_name}
+        {customer.fullName}
       </h1>
 
       {error ? (
@@ -80,7 +73,7 @@ export default async function CustomerDetailPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
-                {projects?.map((p) => (
+                {projects.map((p) => (
                   <tr key={p.id} className="hover:bg-neutral-50">
                     <td className="px-4 py-2">
                       <Link
@@ -90,10 +83,10 @@ export default async function CustomerDetailPage({
                         {p.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-2 text-neutral-600">{p.package}</td>
+                    <td className="px-4 py-2 text-neutral-600">{PACKAGE_LABELS[p.package]}</td>
                   </tr>
                 ))}
-                {projects?.length === 0 ? (
+                {projects.length === 0 ? (
                   <tr>
                     <td colSpan={2} className="px-4 py-6 text-center text-neutral-400">
                       Chưa có dự án nào.
@@ -116,7 +109,7 @@ export default async function CustomerDetailPage({
                 <input
                   name="project_name"
                   required
-                  defaultValue={`Portfolio - ${customer.full_name}`}
+                  defaultValue={`Portfolio - ${customer.fullName}`}
                   className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none"
                 />
               </div>
@@ -133,7 +126,7 @@ export default async function CustomerDetailPage({
                   <option value="">— Chọn gói —</option>
                   {PACKAGE_OPTIONS.map((p) => (
                     <option key={p} value={p}>
-                      {p}
+                      {PACKAGE_LABELS[p]}
                     </option>
                   ))}
                 </select>

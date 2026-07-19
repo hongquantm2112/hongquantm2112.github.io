@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PackageType {
+  PDF
+  LANDING_PAGE
+  COMBO
+}
+
+enum CustomerStatus {
+  MOI_LIEN_HE
+  DANG_LAM
+  CHO_KHACH_DUYET
+  DA_GIAO
+  DA_THANH_TOAN
+  HUY
+}
+
+enum NodeType {
+  CUSTOMER_INFO
+  EXPERIENCE
+  THEME
+  DESIGN_REQUEST
+  CONTENT_REVIEW
+  PRODUCT
+}
+
+enum NodeStatus {
+  IDLE
+  RUNNING
+  DONE
+  ERROR
+  WAITING_REVIEW
+}
+
+model Customer {
+  id        String         @id @default(cuid())
+  fullName  String
+  email     String?
+  phone     String?
+  industry  String?
+  source    String?
+  package   PackageType?
+  status    CustomerStatus @default(MOI_LIEN_HE)
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  projects Project[]
+
+  @@index([status])
+  @@index([package])
+}
+
+model Project {
+  id         String      @id @default(cuid())
+  customerId String?
+  customer   Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  name       String
+  package    PackageType
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  nodes CanvasNode[]
+  edges CanvasEdge[]
+
+  @@index([customerId])
+}
+
+model CanvasNode {
+  id           String     @id @default(cuid())
+  projectId    String
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  nodeType     NodeType
+  positionX    Float      @default(0)
+  positionY    Float      @default(0)
+  inputData    Json       @default("{}")
+  outputData   Json       @default("{}")
+  status       NodeStatus @default(IDLE)
+  errorMessage String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  outgoingEdges CanvasEdge[] @relation("SourceNode")
+  incomingEdges CanvasEdge[] @relation("TargetNode")
+
+  @@index([projectId])
+}
+
+model CanvasEdge {
+  id           String     @id @default(cuid())
+  projectId    String
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceNodeId String
+  sourceNode   CanvasNode @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNodeId String
+  targetNode   CanvasNode @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@index([projectId])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+}

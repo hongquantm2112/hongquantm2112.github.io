@@ -1,25 +1,12 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { signIn as authSignIn, signOut as authSignOut } from "@/auth";
 
-export async function signIn(formData: FormData) {
-  const email = String(formData.get("email") ?? "");
-  const password = String(formData.get("password") ?? "");
+export async function signInWithGoogle(formData: FormData) {
   const next = String(formData.get("next") ?? "/");
-
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
-  }
-
-  redirect(next || "/");
+  await authSignIn("google", { redirectTo: next || "/" });
 }
 
 export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/login");
+  await authSignOut({ redirectTo: "/login" });
 }
